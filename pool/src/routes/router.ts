@@ -1,7 +1,7 @@
+import type { FastifyInstance } from 'fastify'
+
 import { routes as pools } from './pools'
 
-export function routes(fastify: any, _opts: any, done: any) {
+export async function routes(fastify: FastifyInstance) {
   fastify.register(pools, { prefix: '/pools' })
-
-  done()
 }
