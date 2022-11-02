@@ -6,9 +6,8 @@ generator client {
 }
 
 generator erd {
-  provider                  = "prisma-erd-generator"
-  output                    = "../src/db/erd.svg"
-  includeRelationFromFields = true
+  provider = "prisma-erd-generator"
+  output   = "../src/db/erd.svg"
 }
 
 datasource db {
@@ -18,9 +17,64 @@ datasource db {
 
 model Pool {
   id        String   @id @default(cuid())
+  ownerId   String?  @map("owner_id")
   code      String   @unique
   title     String
   createdAt DateTime @default(now()) @map("created_at")
 
+  owner        User?         @relation(fields: [ownerId], references: [id])
+  participants Participant[]
+
   @@map("pools")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  createdPools    Pool[]
+  participatingAt Participant[]
+
+  @@map("users")
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  poolId    String   @map("pool_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  pool Pool @relation(fields: [poolId], references: [id])
+  bet  Bet?
+
+  @@unique([poolId, userId])
+  @@map("participants")
+}
+
+model Match {
+  id                            String   @id @default(cuid())
+  firstNationalTeamCountryCode  String   @map("first_national_team_country_code")
+  secondNationalTeamCountryCode String   @map("second_national_team_country_code")
+  createdAt                     DateTime @default(now()) @map("created_at")
+
+  bets Bet[]
+
+  @@map("matches")
+}
+
+model Bet {
+  id                      String   @id @default(cuid())
+  matchId                 String
+  participantId           String   @unique
+  nationalTeamCountryCode String   @map("national_team_country_code")
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  match       Match       @relation(fields: [matchId], references: [id])
+  participant Participant @relation(fields: [participantId], references: [id])
+
+  @@map("bets")
 }
