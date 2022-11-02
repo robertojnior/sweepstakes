@@ -1,9 +1,16 @@
-import type { FastifyInstance } from 'fastify'
+import type {
+  FastifyInstance,
+  RouteShorthandOptions,
+  HookHandlerDoneFunction
+} from 'fastify'
+import { prisma } from '../db/prisma'
 
-import { PoolRepo } from '../repositories/PoolRepo'
+export function routes(
+  fastify: FastifyInstance,
+  options: RouteShorthandOptions,
+  done: HookHandlerDoneFunction
+) {
+  fastify.get('/', options, () => prisma.pool.findMany())
 
-const repo = new PoolRepo()
-
-export async function routes(fastify: FastifyInstance) {
-  fastify.get('/', () => repo.pool.findMany())
+  done()
 }
